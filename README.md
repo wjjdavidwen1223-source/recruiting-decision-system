@@ -1,18 +1,18 @@
 # AI Resume Scoring System
 
 ## Overview
-This project is a Python-based system that analyzes candidate resumes and evaluates their fit for a given job using structured scoring logic.  
+This project is a Python-based system that analyzes candidate resumes and evaluates their fit for a given job using structured scoring logic.
 
-It simulates a simplified recruiting evaluation process by transforming unstructured candidate information into a standardized, data-driven scoring framework.
+It simulates a simplified recruiting evaluation workflow by transforming candidate information into a standardized, data-driven scoring framework to support consistent decision-making.
 
 ---
 
 ## Features
 - Processes and structures candidate data using pandas  
-- Matches candidate skills against job requirements  
-- Calculates a score based on skill match and experience  
+- Matches candidate skills against defined job requirements  
+- Calculates a score based on skill alignment and experience  
 - Ranks candidates from strongest to weakest fit  
-- Outputs a clear, comparable evaluation across multiple candidates  
+- Produces a clear and comparable evaluation output across multiple candidates  
 
 ---
 
@@ -25,19 +25,26 @@ It simulates a simplified recruiting evaluation process by transforming unstruct
 ## How It Works
 The system assigns:
 - +2 points for each matching required skill  
-- +1 point per year of experience  
+- +1 point per year of relevant experience  
 
 Candidates are then ranked based on their total score to identify the best fit for a given role.
 
 ---
 
 ## Example Use Case
-Given a dataset of candidates and a job description with required skills (e.g., Python, SQL), the system evaluates each candidate and produces a ranked list.  
+Given a dataset of candidates and a job with required skills (e.g., Python, SQL), the system evaluates each candidate and generates a ranked output.
 
 This output can be used to support:
 - Resume screening  
 - Candidate comparison  
 - Early-stage hiring decisions  
+
+---
+
+## Impact
+- Standardizes candidate evaluation using consistent scoring logic  
+- Reduces subjective bias in early-stage screening  
+- Improves efficiency in comparing multiple candidates  
 
 ---
 
