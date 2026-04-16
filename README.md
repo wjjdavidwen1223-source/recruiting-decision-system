@@ -20,12 +20,14 @@ It models candidate evaluation as a **ranking and classification problem**, enab
 Candidate data is first queried using SQL to simulate extraction from a structured database, then processed using Pandas.
 
 SELECT 
-  candidate_id,
-  skills,
-  years_experience,
-  job_required_skills
-FROM candidates
-WHERE years_experience IS NOT NULL;
+  c.candidate_id,
+  c.skills,
+  c.years_experience,
+  j.required_skills
+FROM candidates c
+JOIN jobs j
+  ON c.job_id = j.job_id
+WHERE c.years_experience IS NOT NULL;
 
 This step reflects how real-world systems retrieve and filter structured data before downstream processing.
 
