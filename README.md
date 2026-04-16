@@ -1,4 +1,4 @@
-# AI Resume Scoring System
+# Machine Learning-Based Resume Ranking System
 
 ## Overview
 This project is a Python-based system that analyzes candidate resumes and evaluates their fit for a given job using structured scoring logic.
