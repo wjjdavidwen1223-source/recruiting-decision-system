@@ -106,3 +106,15 @@ This project demonstrates:
 
 ## Demo
 See `resume_scoring.py` for a sample implementation and output.
+
+## 🤖 ML Extension
+This project was extended with a baseline supervised machine learning model using Logistic Regression.
+
+The workflow includes:
+- preprocessing structured candidate features
+- one-hot encoding categorical variables
+- splitting data into training and test sets
+- training a classification model to predict candidate fit
+- evaluating performance using accuracy, precision, and recall
+
+This extension demonstrates the transition from rule-based candidate scoring to a data-driven ML approach.
