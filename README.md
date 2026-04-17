@@ -95,7 +95,35 @@ This simulates real-world hiring behavior where decisions depend on relative can
 
 ---
 
-## 🔄 Workflow
+## 🪜 Multi-Stage Evaluation Workflow
+
+The recruiting system can be extended beyond resume screening into a multi-stage candidate evaluation process.
+
+### Stage 1: Resume Screening
+- Candidates are scored based on skill alignment, experience, and rule-based matching
+- Only candidates above a defined threshold move forward
+
+### Stage 2: Assessment Screening
+- Candidates who pass the resume screen receive an online assessment
+- Candidates scoring **85% or above** move to the next stage
+- Candidates below the threshold are filtered out or placed on hold depending on pipeline needs
+
+### Stage 3: Recruiter Phone Screen
+- Candidates are evaluated by a recruiter using a structured scorecard
+- Example decision rule:
+  - **9/10 or above** → move to interview
+  - **7–8/10** → hold for comparison
+  - **below 7/10** → reject
+
+### Stage 4: Interview Progression
+- Candidates who pass the recruiter screen advance to formal interviews
+- Final outcomes depend on both stage performance and pipeline context
+
+This structure reflects a more realistic hiring workflow where decisions are made across multiple evaluation layers rather than from resume screening alone.
+
+---
+
+## 🔄 System Processing Workflow
 The system follows this pipeline:
 
 `Candidate Data -> Feature Extraction -> Scoring -> Ranking -> Decision Bucket -> Communication Action`
