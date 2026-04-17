@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from resume_scoring import run_screening
 
-st.title("Recruiting Decision System")
+st.title("AI Recruiting Decision System (JiaJun Wen)")
+st.caption("Bank Frontline Resume Screening | Rule-based Decision Engine")
 
 uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
