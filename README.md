@@ -69,6 +69,32 @@ This reflects how recruiting decisions are often made in real workflows: not onl
 
 ---
 
+## 🧩 Candidate Pipeline States
+
+Candidates move through multiple states in the recruiting pipeline:
+
+- Applied → initial entry into the system  
+- Screened → evaluated based on resume scoring  
+- Interview → selected for further evaluation  
+- Hold → temporarily paused for comparison with stronger candidates  
+- Rejected → not selected for current role  
+- Offer → selected for hiring  
+
+This reflects a more realistic hiring pipeline rather than a simple one-step decision.
+
+---
+## ⚖️ Dynamic Decision Logic
+
+Decisions are not static and depend on pipeline context:
+
+- Mid-tier candidates may be placed on **Hold**  
+- If stronger candidates enter the pipeline, they may be **rejected**  
+- If no stronger candidates are available after a period of time, they may be **moved to Interview**  
+
+This simulates real-world hiring behavior where decisions depend on relative candidate strength and hiring capacity.
+
+---
+
 ## 🔄 Workflow
 The system follows this pipeline:
 
@@ -81,6 +107,19 @@ The system follows this pipeline:
 4. **Ranking**
 5. **Decision Routing** (`Interview / Hold / Reject`)
 6. **Next-Step Communication**
+
+---
+
+## 🤖 Automation Layer
+
+The system can be extended to automate key recruiting actions:
+
+- Automatically send interview invitations for high-scoring candidates  
+- Trigger follow-up messages for candidates on hold  
+- Send rejection emails for low-scoring candidates  
+- Track pipeline metrics such as interview rate and rejection rate  
+
+This reduces manual workload and improves recruiting efficiency at scale.
 
 ---
 
@@ -113,7 +152,7 @@ The system follows this pipeline:
 
 ## 📁 Project Structure
 
-resume-ranking-system/
+recruiting-decision-system/
 │── resume_scoring.py
 │── data/
 │ └── sample_candidates.csv
