@@ -9,7 +9,7 @@ REQUIRED_SKILLS = [
     "customer service",
     "banking",
     "financial",
-    "relationship management"
+    "relationship management",
 ]
 
 def score_sales_experience(years):
@@ -71,8 +71,8 @@ def score_skills(skills_text):
         score += 2
     if "relationship management" in matched:
         score += 1
-        
-return min(score, 5), matched
+
+    return min(score, 5), matched
 
 def decision_from_score(score, education_score, matched_skills, banking_exp_score):
     if education_score == -999:
@@ -82,7 +82,6 @@ def decision_from_score(score, education_score, matched_skills, banking_exp_scor
     if not must_have.intersection(set(matched_skills)):
         return "Reject"
 
-    # banking / financial exposure is strongly preferred for this version
     if banking_exp_score == 0 and score >= INTERVIEW_THRESHOLD:
         return "Hold"
 
@@ -119,11 +118,11 @@ def run_screening(df):
     result["Matched_Skills"] = skills_output.apply(lambda x: ", ".join(x[1]))
 
     result["Score"] = (
-        result["Sales_Score"] +
-        result["Customer_Service_Score"] +
-        result["Banking_Score"] +
-        result["Education_Score"] +
-        result["Skills_Score"]
+        result["Sales_Score"]
+        + result["Customer_Service_Score"]
+        + result["Banking_Score"]
+        + result["Education_Score"]
+        + result["Skills_Score"]
     )
 
     result["Decision"] = result.apply(
@@ -131,9 +130,9 @@ def run_screening(df):
             row["Score"],
             row["Education_Score"],
             row["Matched_Skills"].split(", ") if row["Matched_Skills"] else [],
-            row["Banking_Score"]
+            row["Banking_Score"],
         ),
-        axis=1
+        axis=1,
     )
 
     return result
