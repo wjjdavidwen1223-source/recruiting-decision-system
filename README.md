@@ -1,9 +1,11 @@
-# 🚀 Machine Learning-Based Resume Ranking System
+# 🚀 Resume Ranking and Recruiting Decision System
 
 ## 📌 Overview
 This project is a Python-based system that evaluates candidate-job fit by transforming unstructured resume data into a structured scoring framework.
 
 It models candidate evaluation as a **ranking and classification problem**, enabling consistent, data-driven comparison across multiple candidates.
+
+More importantly, this project is designed as a **recruiting decision system prototype**, simulating how candidate data flows through scoring, ranking, and decision routing (interview, hold, rejection) in a real-world hiring pipeline.
 
 ---
 
@@ -11,7 +13,8 @@ It models candidate evaluation as a **ranking and classification problem**, enab
 - Feature engineering from unstructured data  
 - Rule-based scoring as a baseline model  
 - Candidate ranking and classification  
-- Handling real-world data variability  
+- Handling real-world data variability
+- Workflow and decision system design for recruiting pipelines
 
 ---
 
@@ -46,17 +49,48 @@ This step reflects how real-world systems retrieve and filter structured data be
 
 ## 🧮 Scoring Model
 - **+2 points** per matching required skill  
-- **+1 point** per year of relevant experience  
+- **+1 point** per year of relevant experience
+
+---
+
+## 🧭 Decision Policy
+After scoring, candidates are routed into decision buckets:
+
+- **High-score candidates** → move directly to **Interview**
+- **Mid-score candidates** → placed on **Hold** for re-evaluation
+- **Low-score candidates** → receive automated **Rejection**
+- **Hold candidates** may later move forward or be rejected depending on:
+  - stronger incoming candidates
+  - pipeline capacity
+  - role urgency
+  - hiring volume
+
+This reflects how recruiting decisions are often made in real workflows: not only based on absolute score, but also based on relative comparison within an active pipeline.
+
+---
+
+## 🔄 Workflow
+The system follows this pipeline:
+
+`Candidate Data -> Feature Extraction -> Scoring -> Ranking -> Decision Bucket -> Communication Action`
+
+### Workflow Stages
+1. **Candidate Data Input**
+2. **Feature Extraction**
+3. **Score Calculation**
+4. **Ranking**
+5. **Decision Routing** (`Interview / Hold / Reject`)
+6. **Next-Step Communication**
 
 ---
 
 ## 📊 Example Output
 
-| Name  | Score | Decision          |
-|------|------|------------------|
-| Cathy | 11   | Strong Fit        |
-| Alex  | 9    | Good Fit          |
-| Brian | 6    | Needs Improvement |
+| Name  | Score | Decision  |
+|-------|-------|-----------|
+| Cathy | 11    | Interview |
+| Alex  | 9     | Hold      |
+| Brian | 6     | Reject    |
 
 ---
 
@@ -105,8 +139,8 @@ Given a dataset of candidates and job requirements, the system:
 
 ---
 
-## 🤖 ML Extension
-This project includes a baseline supervised machine learning model using Logistic Regression.
+## 🤖 Extension
+This project includes a baseline supervised machine learning model using Logistic Regression as an **extension to the rule-based system**.
 
 The workflow includes:
 - preprocessing structured candidate features  
@@ -118,7 +152,7 @@ The workflow includes:
 **Model Performance:**
 - Accuracy: ~0.80  
 
-This extension demonstrates the transition from **rule-based scoring → data-driven ML approach**.
+This extension demonstrates how a rule-based system can evolve into a more adaptive, data-driven approach to reduce false negatives and improve candidate matching.
 
 ---
 
@@ -130,19 +164,30 @@ This extension demonstrates the transition from **rule-based scoring → data-dr
 
 ---
 
+## ⚠️ Current Limitations
+- Keyword-based scoring may under-rank strong candidates with unconventional resume wording
+- Resume formatting inconsistencies can affect extracted features
+- The current system runs as an offline prototype and is not yet integrated with a live ATS
+- Mid-tier candidate decisions still depend on configurable business rules and pipeline context
+
+---
+
 ## 🔄 Future Improvements
-- Improve feature engineering for better predictive performance  
-- Integrate NLP for resume text parsing  
-- Expand dataset for more robust evaluation  
-- Explore advanced models (e.g., Random Forest, Gradient Boosting)  
+- Integrate with an ATS or structured recruiting database
+- Add recruiter-facing dashboard for pipeline visibility
+- Trigger automated follow-up communication based on candidate status
+- Add semantic matching / NLP for deeper resume-job alignment
+- Support recruiter override decisions and audit logs
+- Expand the system into a multi-stage evaluation workflow beyond resume screening 
 
 ---
 
 ## 🎯 Purpose
 This project demonstrates:
-- Translating real-world workflows into data-driven systems  
-- Structured decision-making using Python  
-- Foundations for machine learning-based ranking systems  
+- Translating real-world recruiting workflows into structured, data-driven systems  
+- Designing scalable decision-making pipelines using Python  
+- Applying machine learning as an extension to operational systems  
+- Building AI-assisted workflows for high-efficiency recruiting operations  
 
 ---
 
