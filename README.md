@@ -123,6 +123,36 @@ This reduces manual workload and improves recruiting efficiency at scale.
 
 ---
 
+## ⏱️ Response Timing & Candidate Communication
+
+To improve candidate experience and maintain pipeline momentum, the system can incorporate response timing rules:
+
+- **High-score candidates** → contacted within 24 hours for interview scheduling  
+- **Mid-tier candidates (Hold)** → receive status updates within 2–3 days to keep engagement  
+- **Low-score candidates** → receive automated rejection within 24–48 hours  
+
+The system can also trigger follow-ups:
+- Reminder emails if candidates do not respond  
+- Re-evaluation of held candidates after a defined time window  
+
+This ensures that candidates are not left waiting and helps maintain a responsive and efficient recruiting process.
+
+---
+
+## 👤 Candidate Experience Layer
+
+The system can be extended to provide transparency to candidates by allowing them to track their application status.
+
+Possible features include:
+- Real-time status updates (Applied, Screened, Interview, Hold, Rejected, Offer)
+- Notifications when status changes
+- Estimated response timelines based on pipeline stage
+- Reduced uncertainty and improved candidate experience
+
+This helps create a more transparent and responsive hiring process, which is critical in high-volume recruiting environments.
+
+---
+
 ## 📊 Example Output
 
 | Name  | Score | Decision  |
