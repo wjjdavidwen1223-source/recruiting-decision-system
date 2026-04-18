@@ -120,13 +120,24 @@ def recruiter_signal(decision, score):
         return "✅ Interview Ready"
     elif decision == "Hold":
         return "⚠️ Keep Warm"
-    return "❌ Reject"
+    return "❌ Likely Rejected"
 
 
-def next_action(decision, follow_up_due):
+def follow_up_due(days_in_pipeline, decision):
+    days = safe_float(days_in_pipeline)
+    if decision == "Interview" and days >= 1:
+        return "Yes"
+    if decision == "Hold" and days >= 3:
+        return "Yes"
+    if decision == "Reject" and days >= 2:
+        return "Yes"
+    return "No"
+
+
+def next_action(decision, follow_up_due_flag):
     if decision == "Interview":
         return "Schedule recruiter screen"
-    elif decision == "Hold" and follow_up_due:
+    elif decision == "Hold" and follow_up_due_flag:
         return "Send pipeline update"
     elif decision == "Hold":
         return "Review later / compare against pool"
@@ -141,17 +152,6 @@ def priority_level(decision, score):
     elif decision == "Hold":
         return "Medium"
     return "Low"
-
-
-def follow_up_due(days_in_pipeline, decision):
-    days = safe_float(days_in_pipeline)
-    if decision == "Interview" and days >= 1:
-        return "Yes"
-    if decision == "Hold" and days >= 3:
-        return "Yes"
-    if decision == "Reject" and days >= 2:
-        return "Yes"
-    return "No"
 
 
 def build_reason_and_improvement(
@@ -176,7 +176,7 @@ def build_reason_and_improvement(
 
     if sales_years < 2:
         reasons.append("Sales experience is below preferred threshold.")
-        improvements.append("Add measurable sales outcomes such as targets, quotas, or conversion metrics.")
+        improvements.append("Add measurable sales outcomes such as quotas, targets, or conversion metrics.")
 
     if service_years < 2:
         reasons.append("Customer service experience is below preferred threshold.")
@@ -240,11 +240,9 @@ def decision_from_score(score, education_score, matched_skills, banking_score, s
 
     core_match_count = len(CORE_SKILLS.intersection(matched))
 
-    # Hard reject: no real customer-facing signal
     if core_match_count == 0 and sales_years < 1 and service_years < 1:
         return "Reject"
 
-    # Strict interview logic: this is intentionally selective
     if (
         education_score >= 2
         and banking_score >= 4
@@ -256,7 +254,6 @@ def decision_from_score(score, education_score, matched_skills, banking_score, s
     ):
         return "Interview"
 
-    # Hold logic
     if score >= HOLD_THRESHOLD:
         return "Hold"
 
@@ -266,7 +263,6 @@ def decision_from_score(score, education_score, matched_skills, banking_score, s
 def run_screening(df):
     result = df.copy()
 
-    # Default columns
     defaults = {
         "Name": "",
         "Role": "Relationship Banker",
