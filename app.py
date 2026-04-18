@@ -47,7 +47,6 @@ if uploaded_file is not None:
     if st.button("Run Recruiting Workflow"):
         results = run_screening(df)
 
-        # DASHBOARD METRICS
         st.subheader("Recruiting Dashboard")
 
         total_candidates = len(results)
@@ -65,7 +64,10 @@ if uploaded_file is not None:
         col5.metric("Follow-Ups Due", follow_up_due_count)
 
         col6, col7 = st.columns(2)
-        col6.metric("Interview Rate", f"{round((interview_count / total_candidates) * 100, 1) if total_candidates else 0}%")
+        col6.metric(
+            "Interview Rate",
+            f"{round((interview_count / total_candidates) * 100, 1) if total_candidates else 0}%",
+        )
         col7.metric("Average Score", avg_score)
 
         st.subheader("Decision Distribution")
@@ -78,7 +80,6 @@ if uploaded_file is not None:
         st.write(stage_counts)
         st.bar_chart(stage_counts)
 
-        # RECRUITER ACTION QUEUE
         st.subheader("Recruiter Action Queue")
         recruiter_queue_cols = [
             "Name",
@@ -93,7 +94,6 @@ if uploaded_file is not None:
         ]
         st.dataframe(results[recruiter_queue_cols], use_container_width=True)
 
-        # TOP CANDIDATES
         st.subheader("Top Candidates")
         top_candidate_cols = [
             "Name",
@@ -106,11 +106,9 @@ if uploaded_file is not None:
         ]
         st.dataframe(results[top_candidate_cols].head(10), use_container_width=True)
 
-        # FULL OUTPUT
         st.subheader("Full Candidate Output")
         st.dataframe(results, use_container_width=True)
 
-        # WORKFLOW VIEW
         st.subheader("Workflow Architecture")
         st.markdown(
             """
@@ -131,7 +129,6 @@ Auto-generated candidate message based on decision stage
 """
         )
 
-        # DOWNLOAD
         csv = results.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="Download Workflow Results as CSV",
