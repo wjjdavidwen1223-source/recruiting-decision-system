@@ -1,6 +1,8 @@
 BANK_ROLE_PROFILES = {
     "bofa_relationship_banker": {
         "label": "BoA Relationship Banker",
+        "company": "Bank of America",
+        "job_family": "Retail Banking",
         "min_education": "high school",
         "must_have_signals": [
             "client_service",
@@ -14,6 +16,7 @@ BANK_ROLE_PROFILES = {
             "sales",
             "problem_solving",
             "operations",
+            "adaptability",
         ],
         "weights": {
             "client_service": 4,
@@ -21,18 +24,30 @@ BANK_ROLE_PROFILES = {
             "relationship_building": 4,
             "sales": 3,
             "banking_experience": 4,
-            "cash_handling": 2,
+            "cash_handling": 3,
             "digital_banking_education": 3,
             "operations": 2,
             "problem_solving": 2,
             "adaptability": 1,
             "education": 2,
         },
-        "interview_threshold": 19,
+        "interview_threshold": 20,
         "hold_threshold": 13,
+        "assessment_required": True,
+        "assessment_types": ["cognitive", "personality"],
+        "target_outcomes": [
+            "client engagement",
+            "financial relationship building",
+            "self-service technology education",
+            "cash transaction support",
+            "operational accuracy",
+        ],
     },
+
     "chase_associate_banker": {
         "label": "Chase Associate Banker",
+        "company": "Chase",
+        "job_family": "Retail Banking",
         "min_education": "high school",
         "must_have_signals": [
             "client_service",
@@ -45,6 +60,7 @@ BANK_ROLE_PROFILES = {
             "operations",
             "problem_solving",
             "banking_experience",
+            "adaptability",
         ],
         "weights": {
             "client_service": 4,
@@ -52,18 +68,30 @@ BANK_ROLE_PROFILES = {
             "relationship_building": 4,
             "sales": 2,
             "banking_experience": 3,
-            "cash_handling": 3,
+            "cash_handling": 4,
             "digital_banking_education": 4,
             "operations": 3,
             "problem_solving": 2,
             "adaptability": 1,
             "education": 2,
         },
-        "interview_threshold": 18,
+        "interview_threshold": 19,
         "hold_threshold": 12,
+        "assessment_required": True,
+        "assessment_types": ["cognitive", "personality"],
+        "target_outcomes": [
+            "welcoming client experience",
+            "branch transaction support",
+            "technology self-service education",
+            "issue resolution",
+            "trusted relationship building",
+        ],
     },
+
     "generic_retail_banker": {
         "label": "Generic Retail Banker",
+        "company": "Generic Bank",
+        "job_family": "Retail Banking",
         "min_education": "high school",
         "must_have_signals": [
             "client_service",
@@ -76,6 +104,8 @@ BANK_ROLE_PROFILES = {
             "digital_banking_education",
             "sales",
             "operations",
+            "problem_solving",
+            "adaptability",
         ],
         "weights": {
             "client_service": 4,
@@ -92,5 +122,13 @@ BANK_ROLE_PROFILES = {
         },
         "interview_threshold": 17,
         "hold_threshold": 11,
+        "assessment_required": True,
+        "assessment_types": ["cognitive", "personality"],
+        "target_outcomes": [
+            "customer service",
+            "transaction support",
+            "branch operations",
+            "relationship development",
+        ],
     },
 }
