@@ -21,6 +21,10 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
     return "\n".join(paragraphs).strip()
 
 
+def extract_text_from_txt(file_bytes: bytes) -> str:
+    return file_bytes.decode("utf-8", errors="ignore").strip()
+
+
 def extract_text_from_uploaded_file(uploaded_file) -> str:
     filename = uploaded_file.name.lower()
     file_bytes = uploaded_file.read()
@@ -31,4 +35,7 @@ def extract_text_from_uploaded_file(uploaded_file) -> str:
     if filename.endswith(".docx"):
         return extract_text_from_docx(file_bytes)
 
-    raise ValueError("Unsupported file type. Please upload a PDF or DOCX file.")
+    if filename.endswith(".txt"):
+        return extract_text_from_txt(file_bytes)
+
+    raise ValueError("Unsupported file type. Please upload a PDF, DOCX, or TXT file.")
