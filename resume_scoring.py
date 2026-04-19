@@ -1,23 +1,5 @@
 import pandas as pd
-
-INTERVIEW_THRESHOLD = 15
-HOLD_THRESHOLD = 11
-MAX_SCORE = 22
-
-REQUIRED_SKILLS = [
-    "sales",
-    "communication",
-    "customer service",
-    "banking",
-    "financial",
-    "relationship management",
-    "crm",
-    "client service",
-    "cross-selling",
-    "upselling",
-]
-
-CORE_SKILLS = {"sales", "communication", "customer service"}
+from jd_profiles import BANK_ROLE_PROFILES
 
 
 def safe_float(value, default=0):
@@ -27,98 +9,94 @@ def safe_float(value, default=0):
         return default
 
 
-def score_sales_experience(years):
-    years = safe_float(years)
-    if years >= 3:
-        return 4
-    elif years >= 2:
-        return 3
-    elif years >= 1:
-        return 2
-    return 0
+def bool_flag(value) -> bool:
+    if pd.isna(value):
+        return False
+    return str(value).strip().lower() in {"yes", "y", "true", "1"}
 
 
-def score_customer_service_experience(years):
-    years = safe_float(years)
-    if years >= 3:
+def score_education(education: str) -> int:
+    if pd.isna(education):
+        return 0
+
+    education = str(education).lower()
+    if "master" in education:
         return 3
-    elif years >= 2:
+    if "bachelor" in education:
         return 2
-    elif years >= 1:
+    if "associate" in education:
+        return 1
+    if "high school" in education or "ged" in education or "diploma" in education:
         return 1
     return 0
 
 
-def score_banking_experience(banking_exp):
-    if pd.isna(banking_exp):
-        return 0
-    value = str(banking_exp).strip().lower()
-    if value in ["yes", "y", "true", "1"]:
-        return 4
-    return 0
+def build_signal_map(row):
+    return {
+        "client_service": safe_float(row.get("Customer_Service_Years", 0)) >= 1,
+        "communication": "communication" in str(row.get("Skills", "")).lower(),
+        "relationship_building": bool_flag(row.get("Relationship_Flag", "No")),
+        "sales": safe_float(row.get("Sales_Years", 0)) >= 1,
+        "banking_experience": str(row.get("Banking_Experience", "No")).lower() == "yes",
+        "cash_handling": safe_float(row.get("Cash_Handling_Years", 0)) >= 1,
+        "digital_banking_education": bool_flag(row.get("Digital_Banking_Flag", "No")),
+        "operations": bool_flag(row.get("Operations_Flag", "No")),
+        "problem_solving": bool_flag(row.get("Problem_Solving_Flag", "No")),
+        "adaptability": bool_flag(row.get("Adaptability_Flag", "No")),
+        "education": score_education(row.get("Education", "")) >= 1,
+    }
 
 
-def score_education(education):
-    if pd.isna(education):
-        return -999
-
-    education = str(education).lower()
-
-    if "master" in education:
-        return 3
-    elif "bachelor" in education:
-        return 2
-    elif "high school" in education or "diploma" in education:
-        return 0
-    return -999
-
-
-def score_skills(skills_text):
-    if pd.isna(skills_text):
-        return 0, []
-
-    skills_text = str(skills_text).lower()
-    matched = []
-
-    for skill in REQUIRED_SKILLS:
-        if skill in skills_text:
-            matched.append(skill)
+def score_candidate_against_profile(row, profile_key: str):
+    profile = BANK_ROLE_PROFILES[profile_key]
+    signal_map = build_signal_map(row)
+    weights = profile["weights"]
 
     score = 0
-    if "sales" in matched:
-        score += 2
-    if "communication" in matched:
-        score += 2
-    if "customer service" in matched:
-        score += 2
-    if "banking" in matched or "financial" in matched:
-        score += 2
-    if "relationship management" in matched:
-        score += 1
-    if "crm" in matched:
-        score += 1
-    if "client service" in matched:
-        score += 1
-    if "cross-selling" in matched or "upselling" in matched:
-        score += 1
+    matched_signals = []
+    missing_signals = []
 
-    return min(score, 6), matched
+    for signal, weight in weights.items():
+        if signal_map.get(signal, False):
+            score += weight
+            matched_signals.append(signal)
+        else:
+            missing_signals.append(signal)
+
+    return score, matched_signals, missing_signals
+
+
+def decision_from_profile_score(score, profile_key, signal_map):
+    profile = BANK_ROLE_PROFILES[profile_key]
+    must_have = profile["must_have_signals"]
+    must_have_hits = sum(1 for s in must_have if signal_map.get(s, False))
+
+    if must_have_hits < max(1, len(must_have) - 1):
+        return "Reject"
+
+    if score >= profile["interview_threshold"]:
+        return "Interview"
+
+    if score >= profile["hold_threshold"]:
+        return "Hold"
+
+    return "Reject"
 
 
 def stage_from_decision(decision):
     if decision == "Interview":
         return "Recruiter Phone Screen"
-    elif decision == "Hold":
+    if decision == "Hold":
         return "Pipeline Hold"
     return "Closed / Reject"
 
 
-def recruiter_signal(decision, score):
-    if decision == "Interview" and score >= 17:
+def recruiter_signal(decision, score, interview_threshold):
+    if decision == "Interview" and score >= interview_threshold + 2:
         return "🔥 High Priority"
-    elif decision == "Interview":
+    if decision == "Interview":
         return "✅ Interview Ready"
-    elif decision == "Hold":
+    if decision == "Hold":
         return "⚠️ Keep Warm"
     return "❌ Likely Rejected"
 
@@ -137,137 +115,98 @@ def follow_up_due(days_in_pipeline, decision):
 def next_action(decision, follow_up_due_flag):
     if decision == "Interview":
         return "Schedule recruiter screen"
-    elif decision == "Hold" and follow_up_due_flag:
+    if decision == "Hold" and follow_up_due_flag:
         return "Send pipeline update"
-    elif decision == "Hold":
+    if decision == "Hold":
         return "Review later / compare against pool"
     return "Send rejection note"
 
 
-def priority_level(decision, score):
-    if decision == "Interview" and score >= 17:
+def priority_level(decision, score, interview_threshold):
+    if decision == "Interview" and score >= interview_threshold + 2:
         return "High"
-    elif decision == "Interview":
+    if decision == "Interview":
         return "Medium"
-    elif decision == "Hold":
+    if decision == "Hold":
         return "Medium"
     return "Low"
 
 
-def build_reason_and_improvement(
-    decision,
-    education_score,
-    banking_score,
-    sales_years,
-    service_years,
-    matched_skills,
-):
-    matched = set(matched_skills)
-    reasons = []
-    improvements = []
+def prettify_signal(signal: str) -> str:
+    return signal.replace("_", " ").title()
 
-    if education_score == -999:
-        reasons.append("Does not meet minimum education requirement.")
-        improvements.append("Meet the minimum education requirement for the role.")
 
-    if banking_score == 0:
-        reasons.append("No clear banking or financial-related experience.")
-        improvements.append("Highlight teller, branch, banking, finance, or account-related exposure.")
+def build_reason_and_improvement(row, profile_key, matched_signals, missing_signals, decision):
+    profile = BANK_ROLE_PROFILES[profile_key]
+    label = profile["label"]
 
-    if sales_years < 2:
-        reasons.append("Sales experience is below preferred threshold.")
-        improvements.append("Add measurable sales outcomes such as quotas, targets, or conversion metrics.")
-
-    if service_years < 2:
-        reasons.append("Customer-facing experience is below preferred threshold.")
-        improvements.append("Emphasize client-facing work, issue resolution, onboarding, scheduling, or service impact.")
-
-    if "sales" not in matched:
-        reasons.append("Resume does not clearly signal sales experience.")
-        improvements.append("Use stronger sales wording such as upselling, cross-selling, quotas, conversions, or target achievement.")
-
-    if "communication" not in matched:
-        reasons.append("Communication signal is not strong enough.")
-        improvements.append("Add client communication, relationship management, or stakeholder interaction examples.")
-
-    if "customer service" not in matched:
-        reasons.append("Customer-facing signal is weak in the resume wording.")
-        improvements.append("Include customer-facing responsibilities and service-related outcomes more explicitly.")
+    strong = [prettify_signal(s) for s in matched_signals[:5]]
+    weak = [prettify_signal(s) for s in missing_signals[:5]]
 
     if decision == "Interview":
-        reasons = ["Strong fit across role-relevant experience, communication, and operational readiness."]
-        improvements = ["Keep quantified achievements and finance-related language visible for recruiter review."]
+        reason = (
+            f"Strong fit for {label}. Clear evidence across "
+            f"{', '.join(strong) if strong else 'key role signals'}."
+        )
+        improvement = (
+            "Keep quantified achievements, client-facing examples, and banking-related language visible."
+        )
+        return reason, improvement
 
-    if decision == "Hold" and not reasons:
-        reasons = ["Candidate shows potential but is missing one or more strong-match signals."]
-        improvements = ["Strengthen role alignment with more explicit sales, service, or banking indicators."]
+    if decision == "Hold":
+        reason = (
+            f"Partial fit for {label}. Candidate shows strength in "
+            f"{', '.join(strong[:3]) if strong else 'some relevant areas'} "
+            f"but is lighter in {', '.join(weak[:3]) if weak else 'a few target signals'}."
+        )
+        improvement = (
+            f"Strengthen evidence for {', '.join(weak[:3]).lower() if weak else 'banking role fit'}."
+        )
+        return reason, improvement
 
-    if decision == "Reject" and not reasons:
-        reasons = ["Candidate does not currently meet enough core role requirements."]
-        improvements = ["Clarify experience, increase keyword alignment, and add measurable impact."]
+    reason = (
+        f"Currently below target match for {label}. Missing stronger evidence in "
+        f"{', '.join(weak[:4]) if weak else 'multiple core requirements'}."
+    )
+    improvement = (
+        "Add clearer client-service, banking, cash-handling, digital banking, or relationship-building evidence."
+    )
+    return reason, improvement
 
-    return " ".join(reasons), " ".join(improvements)
 
-
-def generate_message(name, decision, next_step):
+def generate_message(name, decision, next_step, role_label):
     first_name = str(name).split()[0] if str(name).strip() else "there"
 
     if decision == "Interview":
         return (
-            f"Hi {first_name}, thank you for your application. "
-            f"We were impressed with your background and would like to move you forward to the next step. "
+            f"Hi {first_name}, thank you for your application for the {role_label} role. "
+            f"We were impressed with your background and would like to move you forward. "
             f"Next step: {next_step}."
         )
-    elif decision == "Hold":
+    if decision == "Hold":
         return (
-            f"Hi {first_name}, thank you for your application. "
-            f"We appreciate your background and would like to keep your profile in consideration while we continue our review. "
-            f"We will follow up with updates as the process moves forward."
+            f"Hi {first_name}, thank you for your interest in the {role_label} role. "
+            f"We appreciate your background and would like to keep your application under consideration "
+            f"while we continue the review process."
         )
-    else:
-        return (
-            f"Hi {first_name}, thank you for your interest. "
-            f"After review, we will not be moving forward at this time. "
-            f"We appreciate your time and encourage you to apply again in the future if relevant opportunities arise."
-        )
+    return (
+        f"Hi {first_name}, thank you for your interest in the {role_label} role. "
+        f"After review, we will not be moving forward at this time. "
+        f"We appreciate your time and encourage you to apply again in the future."
+    )
 
 
-def decision_from_score(score, education_score, matched_skills, banking_score, sales_years, service_years):
-    matched = set(matched_skills)
-
-    if education_score == -999:
-        return "Reject"
-
-    core_match_count = len(CORE_SKILLS.intersection(matched))
-
-    if core_match_count == 0 and sales_years < 1 and service_years < 1:
-        return "Reject"
-
-    if (
-        education_score >= 2
-        and banking_score >= 4
-        and sales_years >= 2
-        and service_years >= 2
-        and "sales" in matched
-        and "communication" in matched
-        and score >= INTERVIEW_THRESHOLD
-    ):
-        return "Interview"
-
-    if score >= HOLD_THRESHOLD:
-        return "Hold"
-
-    return "Reject"
-
-
-def run_screening(df):
+def run_screening(df, profile_key="generic_retail_banker"):
     result = df.copy()
+    profile = BANK_ROLE_PROFILES[profile_key]
+    role_label = profile["label"]
 
     defaults = {
         "Name": "",
-        "Role": "Relationship Banker",
+        "Role": role_label,
         "Sales_Years": 0,
         "Customer_Service_Years": 0,
+        "Cash_Handling_Years": 0,
         "Banking_Experience": "No",
         "Education": "",
         "Skills": "",
@@ -275,86 +214,76 @@ def run_screening(df):
         "Candidate_Response_Status": "No Response",
         "Customer_Facing_Evidence": "",
         "Sales_Evidence": "",
+        "Cash_Evidence": "",
         "Banking_Evidence": "",
+        "Digital_Banking_Flag": "No",
+        "Digital_Banking_Evidence": "",
+        "Relationship_Flag": "No",
+        "Relationship_Evidence": "",
+        "Operations_Flag": "No",
+        "Operations_Evidence": "",
+        "Problem_Solving_Flag": "No",
+        "Problem_Solving_Evidence": "",
+        "Adaptability_Flag": "No",
+        "Adaptability_Evidence": "",
+        "Experience_Summaries": "",
     }
 
     for col, default_val in defaults.items():
         if col not in result.columns:
             result[col] = default_val
 
-    result["Sales_Score"] = result["Sales_Years"].apply(score_sales_experience)
-    result["Customer_Service_Score"] = result["Customer_Service_Years"].apply(score_customer_service_experience)
-    result["Banking_Score"] = result["Banking_Experience"].apply(score_banking_experience)
-    result["Education_Score"] = result["Education"].apply(score_education)
+    scored_rows = []
 
-    skills_output = result["Skills"].apply(score_skills)
-    result["Skills_Score"] = skills_output.apply(lambda x: x[0])
-    result["Matched_Skills"] = skills_output.apply(lambda x: ", ".join(x[1]))
-    result["Matched_Skills_List"] = skills_output.apply(lambda x: x[1])
+    for _, row in result.iterrows():
+        signal_map = build_signal_map(row)
+        score, matched_signals, missing_signals = score_candidate_against_profile(row, profile_key)
+        decision = decision_from_profile_score(score, profile_key, signal_map)
 
-    result["Score"] = (
-        result["Sales_Score"]
-        + result["Customer_Service_Score"]
-        + result["Banking_Score"]
-        + result["Education_Score"]
-        + result["Skills_Score"]
-    )
+        reason, improvement = build_reason_and_improvement(
+            row, profile_key, matched_signals, missing_signals, decision
+        )
 
-    result["Decision"] = result.apply(
-        lambda row: decision_from_score(
-            row["Score"],
-            row["Education_Score"],
-            row["Matched_Skills_List"],
-            row["Banking_Score"],
-            safe_float(row["Sales_Years"]),
-            safe_float(row["Customer_Service_Years"]),
-        ),
-        axis=1,
-    )
+        follow_flag = follow_up_due(row.get("Days_In_Pipeline", 0), decision)
+        next_step = next_action(decision, follow_flag == "Yes")
+        priority = priority_level(decision, score, profile["interview_threshold"])
+        recruiter_tag = recruiter_signal(decision, score, profile["interview_threshold"])
 
-    result["Pipeline_Stage"] = result["Decision"].apply(stage_from_decision)
-    result["Recruiter_Signal"] = result.apply(
-        lambda row: recruiter_signal(row["Decision"], row["Score"]),
-        axis=1,
-    )
-    result["Match_Score_%"] = ((result["Score"] / MAX_SCORE) * 100).round(1)
+        max_score = sum(profile["weights"].values())
+        match_pct = round((score / max_score) * 100, 1) if max_score else 0
 
-    explanations = result.apply(
-        lambda row: build_reason_and_improvement(
-            row["Decision"],
-            row["Education_Score"],
-            row["Banking_Score"],
-            safe_float(row["Sales_Years"]),
-            safe_float(row["Customer_Service_Years"]),
-            row["Matched_Skills_List"],
-        ),
-        axis=1,
-    )
+        row_dict = row.to_dict()
+        row_dict.update({
+            "Role": role_label,
+            "Score": score,
+            "Max_Score": max_score,
+            "Match_Score_%": match_pct,
+            "Matched_Signals": ", ".join(prettify_signal(s) for s in matched_signals),
+            "Missing_Signals": ", ".join(prettify_signal(s) for s in missing_signals),
+            "Decision": decision,
+            "Pipeline_Stage": stage_from_decision(decision),
+            "Recruiter_Signal": recruiter_tag,
+            "Reason": reason,
+            "Improvement": improvement,
+            "Follow_Up_Due": follow_flag,
+            "Next_Action": next_step,
+            "Priority": priority,
+            "Generated_Message": generate_message(
+                row.get("Name", ""),
+                decision,
+                next_step,
+                role_label
+            ),
+        })
+        scored_rows.append(row_dict)
 
-    result["Reason"] = explanations.apply(lambda x: x[0])
-    result["Improvement"] = explanations.apply(lambda x: x[1])
+    result_df = pd.DataFrame(scored_rows)
 
-    result["Follow_Up_Due"] = result.apply(
-        lambda row: follow_up_due(row["Days_In_Pipeline"], row["Decision"]),
-        axis=1,
-    )
+    priority_order = {"High": 0, "Medium": 1, "Low": 2}
+    result_df["Priority_Order"] = result_df["Priority"].map(priority_order)
+    result_df = result_df.sort_values(
+        by=["Priority_Order", "Score"],
+        ascending=[True, False]
+    ).drop(columns=["Priority_Order"]).reset_index(drop=True)
 
-    result["Next_Action"] = result.apply(
-        lambda row: next_action(row["Decision"], row["Follow_Up_Due"] == "Yes"),
-        axis=1,
-    )
-
-    result["Priority"] = result.apply(
-        lambda row: priority_level(row["Decision"], row["Score"]),
-        axis=1,
-    )
-
-    result["Generated_Message"] = result.apply(
-        lambda row: generate_message(row["Name"], row["Decision"], row["Next_Action"]),
-        axis=1,
-    )
-
-    result = result.drop(columns=["Matched_Skills_List"])
-    result = result.sort_values(by=["Priority", "Score"], ascending=[True, False]).reset_index(drop=True)
-
-    return result
+    return result_df
