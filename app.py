@@ -66,24 +66,21 @@ def refresh_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def update_candidate_field(df: pd.DataFrame, candidate_name: str, field: str, value):
+def update_candidate_field_by_index(df: pd.DataFrame, row_idx: int, field: str, value):
     updated = df.copy()
-    match_idx = updated.index[updated["Name"] == candidate_name]
-    if len(match_idx) == 0:
+    if row_idx not in updated.index:
         return updated
 
-    updated.loc[match_idx[0], field] = value
+    updated.loc[row_idx, field] = value
     updated = refresh_pipeline(updated)
     return updated
 
 
-def update_multiple_fields(df: pd.DataFrame, candidate_name: str, updates: dict):
+def update_multiple_fields_by_index(df: pd.DataFrame, row_idx: int, updates: dict):
     updated = df.copy()
-    match_idx = updated.index[updated["Name"] == candidate_name]
-    if len(match_idx) == 0:
+    if row_idx not in updated.index:
         return updated
 
-    row_idx = match_idx[0]
     for field, value in updates.items():
         updated.loc[row_idx, field] = value
 
@@ -91,13 +88,10 @@ def update_multiple_fields(df: pd.DataFrame, candidate_name: str, updates: dict)
     return updated
 
 
-def reset_candidate_workflow(df: pd.DataFrame, candidate_name: str):
+def reset_candidate_workflow_by_index(df: pd.DataFrame, row_idx: int):
     updated = df.copy()
-    match_idx = updated.index[updated["Name"] == candidate_name]
-    if len(match_idx) == 0:
+    if row_idx not in updated.index:
         return updated
-
-    row_idx = match_idx[0]
 
     reset_fields = {
         "Assessment_Status": "Not Sent",
@@ -166,36 +160,36 @@ def render_stage_timeline(current_stage: str):
             cols[i].markdown(f"⚪<br>{stage}", unsafe_allow_html=True)
 
 
-def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_key: str):
-    row = df[df["Name"] == candidate_name].iloc[0]
+def render_dynamic_stage_controls(df: pd.DataFrame, row_idx: int, state_key: str):
+    row = df.loc[row_idx]
     stage = str(row.get("Current_Stage", "")).strip()
 
     st.write("### Recruiter Workflow Controls")
     st.write(f"**Current Stage Logic:** {stage}")
 
     util1, util2 = st.columns(2)
+
     with util1:
-        if st.button("Refresh Candidate Workflow", key=f"{state_key}_refresh_{candidate_name}"):
+        if st.button("Refresh Candidate Workflow", key=f"{state_key}_refresh_{row_idx}"):
             st.session_state[state_key] = refresh_pipeline(df)
             st.rerun()
 
     with util2:
-        if st.button("Reset Candidate Workflow", key=f"{state_key}_reset_{candidate_name}"):
-            st.session_state[state_key] = reset_candidate_workflow(df, candidate_name)
+        if st.button("Reset Candidate Workflow", key=f"{state_key}_reset_{row_idx}"):
+            st.session_state[state_key] = reset_candidate_workflow_by_index(df, row_idx)
             st.rerun()
 
     if stage in {"Rejected", "Hired"}:
         st.info("This candidate is in a terminal stage.")
         return
 
-    # Assessment Sent
     if stage == "Assessment Sent":
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("Mark Assessment Completed", key=f"{state_key}_assessment_completed_{candidate_name}"):
-                updated = update_multiple_fields(
+            if st.button("Mark Assessment Completed", key=f"{state_key}_assessment_completed_{row_idx}"):
+                updated = update_multiple_fields_by_index(
                     df,
-                    candidate_name,
+                    row_idx,
                     {
                         "Cognitive_Test_Status": "Completed",
                         "Personality_Test_Status": "Completed",
@@ -205,35 +199,33 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                 st.rerun()
 
         with c2:
-            if st.button("Mark Assessment Failed", key=f"{state_key}_assessment_failed_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Assessment_Result", "Fail")
+            if st.button("Mark Assessment Failed", key=f"{state_key}_assessment_failed_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Assessment_Result", "Fail")
                 st.session_state[state_key] = updated
                 st.rerun()
         return
 
-    # Assessment Completed
     if stage == "Assessment Completed":
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("Mark Assessment Passed", key=f"{state_key}_assessment_passed_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Assessment_Result", "Pass")
+            if st.button("Mark Assessment Passed", key=f"{state_key}_assessment_passed_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Assessment_Result", "Pass")
                 st.session_state[state_key] = updated
                 st.rerun()
 
         with c2:
-            if st.button("Mark Assessment Failed", key=f"{state_key}_assessment_failed2_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Assessment_Result", "Fail")
+            if st.button("Mark Assessment Failed", key=f"{state_key}_assessment_failed2_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Assessment_Result", "Fail")
                 st.session_state[state_key] = updated
                 st.rerun()
         return
 
-    # Recruiter stage
     if stage in {"Assessment Passed", "Recruiter Phone Screen"}:
         recruiter_status = str(row.get("Recruiter_Call_Status", "")).strip()
 
         if recruiter_status in {"Not Scheduled", "To Schedule"}:
-            if st.button("Schedule Recruiter Call", key=f"{state_key}_recruiter_schedule_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Recruiter_Call_Status", "Scheduled")
+            if st.button("Schedule Recruiter Call", key=f"{state_key}_recruiter_schedule_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Recruiter_Call_Status", "Scheduled")
                 st.session_state[state_key] = updated
                 st.rerun()
             return
@@ -241,10 +233,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
         if recruiter_status == "Scheduled":
             c1, c2, c3 = st.columns(3)
             with c1:
-                if st.button("Mark Recruiter Call Passed", key=f"{state_key}_recruiter_pass_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Recruiter Call Passed", key=f"{state_key}_recruiter_pass_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Recruiter_Call_Status": "Completed",
                             "Recruiter_Call_Outcome": "Pass",
@@ -254,10 +246,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
 
             with c2:
-                if st.button("Mark Recruiter Call Hold", key=f"{state_key}_recruiter_hold_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Recruiter Call Hold", key=f"{state_key}_recruiter_hold_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Recruiter_Call_Status": "Completed",
                             "Recruiter_Call_Outcome": "Hold",
@@ -267,10 +259,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
 
             with c3:
-                if st.button("Mark Recruiter Call Failed", key=f"{state_key}_recruiter_fail_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Recruiter Call Failed", key=f"{state_key}_recruiter_fail_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Recruiter_Call_Status": "Completed",
                             "Recruiter_Call_Outcome": "Fail",
@@ -280,13 +272,12 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
             return
 
-    # Manager Interview
     if stage == "Hiring Manager Interview":
         manager_status = str(row.get("Manager_Interview_Status", "")).strip()
 
         if manager_status in {"Not Scheduled", "To Schedule"}:
-            if st.button("Schedule Manager Interview", key=f"{state_key}_manager_schedule_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Manager_Interview_Status", "Scheduled")
+            if st.button("Schedule Manager Interview", key=f"{state_key}_manager_schedule_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Manager_Interview_Status", "Scheduled")
                 st.session_state[state_key] = updated
                 st.rerun()
             return
@@ -294,10 +285,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
         if manager_status == "Scheduled":
             c1, c2, c3 = st.columns(3)
             with c1:
-                if st.button("Mark Manager Interview Passed", key=f"{state_key}_manager_pass_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Manager Interview Passed", key=f"{state_key}_manager_pass_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Manager_Interview_Status": "Completed",
                             "Manager_Interview_Outcome": "Pass",
@@ -307,10 +298,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
 
             with c2:
-                if st.button("Mark Manager Interview Hold", key=f"{state_key}_manager_hold_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Manager Interview Hold", key=f"{state_key}_manager_hold_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Manager_Interview_Status": "Completed",
                             "Manager_Interview_Outcome": "Hold",
@@ -320,10 +311,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
 
             with c3:
-                if st.button("Mark Manager Interview Failed", key=f"{state_key}_manager_fail_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Manager Interview Failed", key=f"{state_key}_manager_fail_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Manager_Interview_Status": "Completed",
                             "Manager_Interview_Outcome": "Fail",
@@ -333,21 +324,19 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
             return
 
-    # Interview Debrief
     if stage == "Interview Debrief":
         c1, c2 = st.columns(2)
-
         with c1:
-            if st.button("Move to Final HR", key=f"{state_key}_debrief_to_hr_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Final_HR_Status", "To Schedule")
+            if st.button("Move to Final HR", key=f"{state_key}_debrief_to_hr_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Final_HR_Status", "To Schedule")
                 st.session_state[state_key] = updated
                 st.rerun()
 
         with c2:
-            if st.button("Reject After Debrief", key=f"{state_key}_debrief_reject_{candidate_name}"):
-                updated = update_multiple_fields(
+            if st.button("Reject After Debrief", key=f"{state_key}_debrief_reject_{row_idx}"):
+                updated = update_multiple_fields_by_index(
                     df,
-                    candidate_name,
+                    row_idx,
                     {
                         "Final_HR_Outcome": "Fail",
                         "Final_HR_Status": "Completed",
@@ -357,13 +346,12 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                 st.rerun()
         return
 
-    # Final HR
     if stage == "Final HR Call":
         final_hr_status = str(row.get("Final_HR_Status", "")).strip()
 
         if final_hr_status in {"Not Started", "To Schedule"}:
-            if st.button("Schedule Final HR", key=f"{state_key}_finalhr_schedule_{candidate_name}"):
-                updated = update_candidate_field(df, candidate_name, "Final_HR_Status", "Scheduled")
+            if st.button("Schedule Final HR", key=f"{state_key}_finalhr_schedule_{row_idx}"):
+                updated = update_candidate_field_by_index(df, row_idx, "Final_HR_Status", "Scheduled")
                 st.session_state[state_key] = updated
                 st.rerun()
             return
@@ -371,10 +359,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
         if final_hr_status == "Scheduled":
             c1, c2 = st.columns(2)
             with c1:
-                if st.button("Mark Final HR Passed", key=f"{state_key}_finalhr_pass_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Final HR Passed", key=f"{state_key}_finalhr_pass_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Final_HR_Status": "Completed",
                             "Final_HR_Outcome": "Pass",
@@ -384,10 +372,10 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
 
             with c2:
-                if st.button("Mark Final HR Failed", key=f"{state_key}_finalhr_fail_{candidate_name}"):
-                    updated = update_multiple_fields(
+                if st.button("Mark Final HR Failed", key=f"{state_key}_finalhr_fail_{row_idx}"):
+                    updated = update_multiple_fields_by_index(
                         df,
-                        candidate_name,
+                        row_idx,
                         {
                             "Final_HR_Status": "Completed",
                             "Final_HR_Outcome": "Fail",
@@ -397,21 +385,20 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
                     st.rerun()
             return
 
-    # Offer
     if stage == "Offer":
         offer_status = str(row.get("Offer_Status", "")).strip()
 
         if offer_status in {"None", "Draft"}:
             c1, c2 = st.columns(2)
             with c1:
-                if st.button("Draft Offer", key=f"{state_key}_offer_draft_{candidate_name}"):
-                    updated = update_candidate_field(df, candidate_name, "Offer_Status", "Draft")
+                if st.button("Draft Offer", key=f"{state_key}_offer_draft_{row_idx}"):
+                    updated = update_candidate_field_by_index(df, row_idx, "Offer_Status", "Draft")
                     st.session_state[state_key] = updated
                     st.rerun()
 
             with c2:
-                if st.button("Send Offer", key=f"{state_key}_offer_send_{candidate_name}"):
-                    updated = update_candidate_field(df, candidate_name, "Offer_Status", "Sent")
+                if st.button("Send Offer", key=f"{state_key}_offer_send_{row_idx}"):
+                    updated = update_candidate_field_by_index(df, row_idx, "Offer_Status", "Sent")
                     st.session_state[state_key] = updated
                     st.rerun()
             return
@@ -419,14 +406,14 @@ def render_dynamic_stage_controls(df: pd.DataFrame, candidate_name: str, state_k
         if offer_status == "Sent":
             c1, c2 = st.columns(2)
             with c1:
-                if st.button("Offer Accepted", key=f"{state_key}_offer_accept_{candidate_name}"):
-                    updated = update_candidate_field(df, candidate_name, "Offer_Decision", "Accepted")
+                if st.button("Offer Accepted", key=f"{state_key}_offer_accept_{row_idx}"):
+                    updated = update_candidate_field_by_index(df, row_idx, "Offer_Decision", "Accepted")
                     st.session_state[state_key] = updated
                     st.rerun()
 
             with c2:
-                if st.button("Offer Declined", key=f"{state_key}_offer_decline_{candidate_name}"):
-                    updated = update_candidate_field(df, candidate_name, "Offer_Decision", "Declined")
+                if st.button("Offer Declined", key=f"{state_key}_offer_decline_{row_idx}"):
+                    updated = update_candidate_field_by_index(df, row_idx, "Offer_Decision", "Declined")
                     st.session_state[state_key] = updated
                     st.rerun()
             return
@@ -545,7 +532,8 @@ with tab2:
     single_results = st.session_state["single_results"]
 
     if single_results is not None:
-        row = single_results.iloc[0]
+        row_idx = single_results.index[0]
+        row = single_results.loc[row_idx]
 
         st.write("### Screening Result")
         c1, c2, c3 = st.columns(3)
@@ -593,7 +581,7 @@ with tab2:
 
         render_dynamic_stage_controls(
             st.session_state["single_results"],
-            row["Name"],
+            row_idx,
             "single_results",
         )
 
@@ -632,14 +620,20 @@ with tab3:
             st.dataframe(queue_df, use_container_width=True)
 
         st.write("### Candidate Workflow Controls")
-        candidate_names = pipeline_df["Name"].tolist()
-        selected_candidate = st.selectbox(
+
+        display_options = [
+            f"{idx} | {pipeline_df.loc[idx, 'Name']}"
+            for idx in pipeline_df.index
+        ]
+
+        selected_option = st.selectbox(
             "Select candidate to manage",
-            options=candidate_names,
+            options=display_options,
             key=f"{state_key}_pipeline_candidate_selector",
         )
 
-        selected_row = pipeline_df[pipeline_df["Name"] == selected_candidate].iloc[0]
+        selected_idx = int(selected_option.split("|")[0].strip())
+        selected_row = pipeline_df.loc[selected_idx]
 
         c1, c2, c3 = st.columns(3)
         c1.metric("Current Stage", selected_row.get("Current_Stage", ""))
@@ -655,11 +649,11 @@ with tab3:
 
         render_dynamic_stage_controls(
             st.session_state[state_key],
-            selected_candidate,
+            selected_idx,
             state_key,
         )
 
-        refreshed_row = st.session_state[state_key][st.session_state[state_key]["Name"] == selected_candidate].iloc[0]
+        refreshed_row = st.session_state[state_key].loc[selected_idx]
 
         st.write("### Selected Candidate Message")
         st.write(refreshed_row.get("Stage_Message", ""))
