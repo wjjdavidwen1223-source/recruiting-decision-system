@@ -9,6 +9,11 @@ from file_parsers import extract_text_from_uploaded_file
 st.set_page_config(page_title="AI Banking Recruiter Copilot", layout="wide")
 
 st.title("AI Banking Recruiter Copilot")
+
+st.markdown("""
+**Built by JiaJun (David) Wen (文家俊)**  
+End-to-end recruiting decision system for retail banking roles
+""")
 st.caption(
     "Built for retail banking hiring workflows | Resume screening, JD matching, experience summarization, and recruiter actions"
 )
