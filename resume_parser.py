@@ -21,6 +21,10 @@ SKILL_KEYWORDS = [
     "problem solving",
     "operations",
     "referrals",
+    "compliance",
+    "risk awareness",
+    "client engagement",
+    "business development",
 ]
 
 CUSTOMER_DIRECT_TERMS = [
@@ -35,85 +39,237 @@ CUSTOMER_DIRECT_TERMS = [
 ]
 
 CUSTOMER_PEOPLE_TERMS = [
-    "customer", "customers", "client", "clients", "guest", "guests",
-    "patient", "patients", "visitor", "visitors", "member", "members",
-    "user", "users", "family", "families", "students"
+    "customer",
+    "customers",
+    "client",
+    "clients",
+    "guest",
+    "guests",
+    "patient",
+    "patients",
+    "visitor",
+    "visitors",
+    "member",
+    "members",
+    "user",
+    "users",
+    "family",
+    "families",
+    "students",
 ]
 
 CUSTOMER_ACTION_TERMS = [
-    "assisted", "helped", "supported", "served", "advised", "guided",
-    "responded", "communicated", "interacted", "handled", "resolved",
-    "addressed", "explained", "coordinated", "scheduled", "hosted",
-    "welcomed", "greeted"
+    "assisted",
+    "helped",
+    "supported",
+    "served",
+    "advised",
+    "guided",
+    "responded",
+    "communicated",
+    "interacted",
+    "handled",
+    "resolved",
+    "addressed",
+    "explained",
+    "coordinated",
+    "scheduled",
+    "hosted",
+    "welcomed",
+    "greeted",
 ]
 
 CUSTOMER_CONTEXT_TERMS = [
-    "inquiries", "questions", "issues", "concerns", "requests",
-    "appointments", "accounts", "service", "support", "onboarding",
-    "check-in", "scheduling", "communications", "intake", "traffic", "queue"
+    "inquiries",
+    "questions",
+    "issues",
+    "concerns",
+    "requests",
+    "appointments",
+    "accounts",
+    "service",
+    "support",
+    "onboarding",
+    "check-in",
+    "scheduling",
+    "communications",
+    "intake",
+    "queue",
+    "traffic",
 ]
 
 SALES_DIRECT_TERMS = [
-    "sales", "selling", "upselling", "cross-selling", "quota",
-    "revenue", "business development", "referral", "referrals",
-    "prospecting", "pipeline"
+    "sales",
+    "selling",
+    "upselling",
+    "cross-selling",
+    "quota",
+    "revenue",
+    "business development",
+    "referral",
+    "referrals",
+    "prospecting",
+    "pipeline",
 ]
 
 SALES_ACTION_TERMS = [
-    "sold", "generated", "increased", "converted", "closed", "promoted",
-    "recommended", "pitched", "marketed", "achieved", "exceeded",
-    "referred", "advised"
+    "sold",
+    "generated",
+    "increased",
+    "converted",
+    "closed",
+    "promoted",
+    "recommended",
+    "pitched",
+    "marketed",
+    "achieved",
+    "exceeded",
+    "referred",
+    "advised",
 ]
 
 SALES_CONTEXT_TERMS = [
-    "target", "quota", "goal", "revenue", "conversion", "clients",
-    "accounts", "products", "services", "solutions"
+    "target",
+    "quota",
+    "goal",
+    "revenue",
+    "conversion",
+    "clients",
+    "accounts",
+    "products",
+    "services",
+    "solutions",
 ]
 
 BANKING_TERMS = [
-    "bank", "banking", "teller", "relationship banker", "associate banker",
-    "branch banker", "financial services", "credit union", "loan", "deposit",
-    "branch", "account opening", "consumer banking", "retail banking",
-    "checking", "savings", "financial center"
+    "bank",
+    "banking",
+    "teller",
+    "relationship banker",
+    "associate banker",
+    "branch banker",
+    "financial services",
+    "credit union",
+    "loan",
+    "deposit",
+    "deposits",
+    "withdrawal",
+    "withdrawals",
+    "branch",
+    "account opening",
+    "consumer banking",
+    "retail banking",
+    "checking",
+    "savings",
+    "financial center",
 ]
 
 COMMUNICATION_TERMS = [
-    "communication", "communicated", "presented", "explained", "coordinated",
-    "liaised", "interfaced", "stakeholders", "clients", "customers"
+    "communication",
+    "communicated",
+    "presented",
+    "explained",
+    "coordinated",
+    "liaised",
+    "interfaced",
+    "stakeholders",
+    "clients",
+    "customers",
 ]
 
 CASH_TERMS = [
-    "cash handling", "cash", "cash drawer", "cash vault", "payments",
-    "deposits", "withdrawals", "money handling", "till", "register",
-    "cashier", "cash transactions"
+    "cash handling",
+    "cash",
+    "cash drawer",
+    "cash vault",
+    "payments",
+    "deposits",
+    "withdrawals",
+    "money handling",
+    "till",
+    "register",
+    "cashier",
+    "cash transactions",
+    "drawer reconciliation",
 ]
 
 DIGITAL_BANKING_TERMS = [
-    "mobile banking", "online banking", "self-service", "atm",
-    "digital banking", "mobile app", "banking app", "technology solutions",
-    "self service", "digital tools"
+    "mobile banking",
+    "online banking",
+    "self-service",
+    "atm",
+    "digital banking",
+    "mobile app",
+    "banking app",
+    "technology solutions",
+    "self service",
+    "digital tools",
+    "digital platform",
 ]
 
 RELATIONSHIP_TERMS = [
-    "relationship", "relationships", "trusted relationship", "client needs",
-    "financial goals", "advisory", "recommendations", "consultative",
-    "rapport", "retention", "relationship building"
+    "relationship",
+    "relationships",
+    "trusted relationship",
+    "client needs",
+    "financial goals",
+    "advisory",
+    "recommendations",
+    "consultative",
+    "rapport",
+    "retention",
+    "relationship building",
 ]
 
 OPERATIONS_TERMS = [
-    "appointments", "scheduling", "queue", "lobby", "traffic",
-    "branch operations", "compliance", "procedures", "policies",
-    "regulatory", "accuracy", "process", "guidelines", "workflow"
+    "appointments",
+    "scheduling",
+    "queue",
+    "lobby",
+    "traffic",
+    "branch operations",
+    "compliance",
+    "procedures",
+    "policies",
+    "regulatory",
+    "accuracy",
+    "process",
+    "guidelines",
+    "workflow",
+    "documentation",
+    "risk awareness",
 ]
 
 PROBLEM_SOLVING_TERMS = [
-    "resolved", "resolution", "problem solving", "troubleshoot",
-    "investigated", "handled issues", "addressed concerns", "critical thinking"
+    "resolved",
+    "resolution",
+    "problem solving",
+    "troubleshoot",
+    "investigated",
+    "handled issues",
+    "addressed concerns",
+    "critical thinking",
+    "issue resolution",
 ]
 
 ADAPTABILITY_TERMS = [
-    "adapted", "adaptability", "learned quickly", "new systems",
-    "new technology", "fast-paced", "cross-trained", "flexible"
+    "adapted",
+    "adaptability",
+    "learned quickly",
+    "new systems",
+    "new technology",
+    "fast-paced",
+    "cross-trained",
+    "flexible",
+]
+
+NAME_STOP_TERMS = [
+    "summary",
+    "education",
+    "skills",
+    "experience",
+    "relevant experience",
+    "professional experience",
 ]
 
 
@@ -137,16 +293,24 @@ def unique_preserve_order(items: list[str]) -> list[str]:
 
 def extract_name(text: str) -> str:
     lines = clean_lines(text)
-    if not lines:
-        return "Unknown"
 
-    for line in lines[:6]:
-        if "@" in line or re.search(r"\d{3}[-\s]?\d{3}[-\s]?\d{4}", line):
+    for line in lines[:8]:
+        norm = normalize_text(line)
+
+        if any(stop in norm for stop in NAME_STOP_TERMS):
             continue
-        if len(line) <= 80:
-            return line
+        if "@" in line:
+            continue
+        if re.search(r"\d{3}[-\s]?\d{3}[-\s]?\d{4}", line):
+            continue
+        if len(line) > 80:
+            continue
+        if len(line.split()) > 6:
+            continue
 
-    return lines[0][:80]
+        return line.strip()
+
+    return "Unknown"
 
 
 def extract_education(text: str) -> str:
@@ -306,9 +470,9 @@ def split_experience_blocks(text: str) -> list[str]:
 
     for line in lines:
         heading_like = (
-            len(line) < 100 and (
+            len(line) < 110 and (
                 re.search(r"\b(20\d{2}|19\d{2})\b", line) or
-                re.search(r"\b(bank|corp|company|inc|llc|branch|store|university|college|school)\b", line.lower())
+                re.search(r"\b(bank|corp|company|inc|llc|branch|store|university|college|school|restaurant|advisor|cashier)\b", line.lower())
             )
         )
 
