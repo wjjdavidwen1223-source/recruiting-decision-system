@@ -1,330 +1,290 @@
-# 🚀 AI-Powered Decision System for Workflow Optimization
+# 🏥 AI Healthcare Recruiting Copilot
 
-## 📌 Overview
-This project is a Python-based system that evaluates candidate-job fit by transforming unstructured resume data into a structured scoring framework.
+**Built by JiaJun (David) Wen (文家俊)**
 
-It models candidate evaluation as a **ranking and classification problem**, enabling consistent, data-driven comparison across multiple candidates.
-
-More importantly, this project is designed as a **recruiting decision system prototype**, simulating how candidate data flows through scoring, ranking, and decision routing (interview, hold, rejection) in a real-world hiring pipeline.
+An end-to-end AI-powered recruiting decision system designed for healthcare and clinical roles, including Registered Nurses (RN), Medical Assistants, and Clinical Research Coordinators.
 
 ---
 
-## 🧠 Key Concepts
-- Feature engineering from unstructured data  
-- Rule-based scoring as a baseline model  
-- Candidate ranking and classification  
-- Handling real-world data variability
-- Workflow and decision system design for recruiting pipelines
+## 🚀 Overview
+
+This project simulates a real-world healthcare recruiting pipeline by combining resume parsing, structured scoring logic, workflow automation, and recruiter decision support.
+
+The system is designed to replicate how healthcare organizations evaluate, screen, and move candidates through a hiring process that requires strict validation of certifications, clinical experience, and compliance standards.
+
+Unlike generic resume screening tools, this system focuses on **domain-specific decision logic**, incorporating healthcare requirements such as licensing, patient care, EMR systems, and regulatory awareness.
 
 ---
 
-🗄️ Data Extraction (SQL Integration)
+## 🔥 Key Features
 
-Candidate data is first queried using SQL to simulate extraction from a structured database, then processed using Pandas.
+### 🧠 AI Screening Engine
 
-```sql
-SELECT 
-  c.candidate_id,
-  c.skills,
-  c.years_experience,
-  j.required_skills
-FROM candidates c
-JOIN jobs j
-  ON c.job_id = j.job_id
-WHERE c.years_experience IS NOT NULL;
-```
+The scoring engine evaluates candidates using structured signals extracted from resumes.
 
-This step reflects how real-world systems retrieve and filter structured data before downstream processing.
+#### Core Evaluation Dimensions
+
+- Certifications (RN license, BLS, ACLS, CPR)
+- Clinical experience (hospital, ICU, ER, outpatient)
+- Patient care exposure
+- EMR/EHR systems (Epic, Cerner)
+- HIPAA compliance awareness
+- Communication and teamwork
+- Education level (ADN, BSN, MSN, PhD)
 
 ---
 
-## ⚙️ Features
-- Processes and structures candidate data using **Pandas**  
-- Matches candidate skills against job requirements  
-- Computes scores based on **skill alignment and experience**  
-- Ranks candidates from strongest to weakest fit  
-- Produces standardized outputs for consistent evaluation  
+### 🎓 Education Handling (Important Design Choice)
+
+Education is modeled as a **graded signal**, not a binary filter.
+
+#### Education Mapping
+
+| Degree | Score |
+|------|------|
+| Associate (ADN) | 1 |
+| Bachelor (BSN) | 2 |
+| Master (MSN) | 3 |
+| PhD / Doctorate | 4 |
+
+#### Scoring Logic
+
+- Education contributes as a **supporting signal**
+- Higher degrees provide incremental advantage
+- Education does **not override core requirements** (e.g., RN license)
+
+#### Design Rationale
+
+Healthcare hiring prioritizes:
+
+1. Certifications (RN license)
+2. Clinical experience
+3. Compliance awareness
+
+Education is used to differentiate candidates **after core qualifications are met**
 
 ---
 
-## 🧮 Scoring Model
-- **+2 points** per matching required skill  
-- **+1 point** per year of relevant experience
+### ⚠️ Risk Detection
+
+The system identifies potential risks in candidate profiles:
+
+- Missing RN license
+- Limited clinical experience
+- Lack of hospital exposure
+- Missing compliance indicators
+
+#### Example Risk Flags
+
+- ❗ Missing RN license  
+- ⚠️ No hospital experience  
+- ⚠️ No HIPAA/compliance signal  
 
 ---
 
-## 🧭 Decision Policy
-After scoring, candidates are routed into decision buckets:
+### 📄 Resume Parsing Engine
 
-- **High-score candidates** → move directly to **Interview**
-- **Mid-score candidates** → placed on **Hold** for re-evaluation
-- **Low-score candidates** → receive automated **Rejection**
-- **Hold candidates** may later move forward or be rejected depending on:
-  - stronger incoming candidates
-  - pipeline capacity
-  - role urgency
-  - hiring volume
+The system includes a rule-based NLP parser that extracts structured data from raw resumes.
 
-This reflects how recruiting decisions are often made in real workflows: not only based on absolute score, but also based on relative comparison within an active pipeline.
-These decisions determine candidate routing into different stages of the recruiting pipeline (e.g., assessment, recruiter screen, or interview).
+#### Supported Formats
 
----
+- PDF
+- DOCX
+- Plain text
 
-## 🧩 Candidate Pipeline States
+#### Extracted Fields
 
-Candidates move through multiple states in the recruiting pipeline:
+- Name
+- Certifications
+- Clinical experience level
+- Skills
+- Education
+- Experience summaries
 
-- Applied → initial entry into the system  
-- Screened → evaluated based on resume scoring  
-- Interview → selected for further evaluation  
-- Hold → temporarily paused for comparison with stronger candidates  
-- Rejected → not selected for current role  
-- Offer → selected for hiring  
+#### Healthcare Signal Detection
 
-This reflects a more realistic hiring pipeline rather than a simple one-step decision.
+The parser identifies:
 
----
-## ⚖️ Dynamic Decision Logic
-
-Decisions are not static and depend on pipeline context:
-
-- Mid-tier candidates may be placed on **Hold**  
-- If stronger candidates enter the pipeline, they may be **rejected**  
-- If no stronger candidates are available after a period of time, they may be **moved to Interview**  
-
-This simulates real-world hiring behavior where decisions depend on relative candidate strength and hiring capacity.
+- RN and certification keywords
+- Clinical environment terms (ICU, ER, hospital)
+- EMR/EHR mentions
+- Compliance language (HIPAA)
+- Patient care terminology
 
 ---
 
-## 🪜 Multi-Stage Evaluation Workflow
+### ⚙️ Workflow Engine (ATS Simulation)
 
-The recruiting system can be extended beyond resume screening into a multi-stage candidate evaluation process.
+This system includes a full recruiting workflow engine that simulates an Applicant Tracking System (ATS).
 
-### Stage 1: Resume Screening
-- Candidates are scored based on skill alignment, experience, and rule-based matching
-- Only candidates above a defined threshold move forward
+#### Pipeline Stages
 
-### Stage 2: Assessment Screening
-- Candidates who pass the resume screen receive an online assessment
-- Candidates scoring **85% or above** move to the next stage
-- Candidates below the threshold are filtered out or placed on hold depending on pipeline needs
+- Applied
+- Assessment Sent
+- Assessment Completed
+- Assessment Passed
+- Recruiter Screening
+- Clinical Interview
+- Interview Debrief
+- Final HR Review
+- Offer
+- Hired / Rejected
 
-### Stage 3: Recruiter Phone Screen
-- Candidates are evaluated by a recruiter using a structured scorecard
-- Example decision rule:
-  - **9/10 or above** → move to interview
-  - **7–8/10** → hold for comparison
-  - **below 7/10** → reject
+#### Features
 
-### Stage 4: Interview Progression
-- Candidates who pass the recruiter screen advance to formal interviews
-- Final outcomes depend on both stage performance and pipeline context
-
-This structure reflects a more realistic hiring workflow where decisions are made across multiple evaluation layers rather than from resume screening alone.
-
----
-
-## 🔄 System Processing Workflow
-The system follows this pipeline:
-
-`Candidate Data -> Feature Extraction -> Scoring -> Ranking -> Decision Bucket -> Communication Action`
-
-### Workflow Stages
-1. **Candidate Data Input**
-2. **Feature Extraction**
-3. **Score Calculation**
-4. **Ranking**
-5. **Decision Routing** (`Interview / Hold / Reject`)
-6. **Next-Step Communication**
+- State-based stage transitions
+- Automated workflow progression
+- Recruiter action queue
+- Blocker detection
+- Follow-up reminders
+- Priority assignment
 
 ---
 
-## 🤖 Automation Layer
+### 📊 Recruiter Dashboard (Streamlit)
 
-The system can be extended to automate key recruiting actions:
+The Streamlit UI enables interactive candidate management.
 
-- Automatically send interview invitations for high-scoring candidates  
-- Trigger follow-up messages for candidates on hold  
-- Send rejection emails for low-scoring candidates  
-- Track pipeline metrics such as interview rate and rejection rate  
+#### Features
 
-This reduces manual workload and improves recruiting efficiency at scale.
-
----
-
-## ⏱️ Response Timing & Candidate Communication
-
-To improve candidate experience and maintain pipeline momentum, the system can incorporate response timing rules:
-
-- **High-score candidates** → contacted within 24 hours for interview scheduling  
-- **Mid-tier candidates (Hold)** → receive status updates within 2–3 days to keep engagement  
-- **Low-score candidates** → receive automated rejection within 24–48 hours  
-
-The system can also trigger follow-ups:
-- Reminder emails if candidates do not respond  
-- Re-evaluation of held candidates after a defined time window  
-
-This ensures that candidates are not left waiting and helps maintain a responsive and efficient recruiting process.
+- Batch screening interface
+- Candidate ranking and prioritization
+- Pipeline visualization
+- Stage-based workflow controls
+- Real-time decision updates
 
 ---
 
-## 📩 Candidate Communication Templates
+### 🔌 FastAPI Backend
 
-The system supports automated communication templates to ensure consistency and professionalism across candidate interactions.
+The system includes a production-style backend API.
 
-### Rejection Communication
-- Generates polite and neutral rejection messages
-- Avoids providing overly specific reasons to reduce legal and bias risks
-- Ensures candidates feel respected and acknowledged
+#### API Capabilities
 
-### Advancement Communication
-- Notifies candidates when they move to the next stage
-- Provides clear next steps (e.g., assessment, phone screen, interview)
-- Maintains a positive and engaging tone
+- Single candidate screening
+- Batch candidate processing
+- Full pipeline execution
+- Workflow analytics
+- Action queue generation
 
-### Design Considerations
-- Use standardized templates with dynamic variables (e.g., candidate name, role)
-- Ensure tone is consistent across all stages
-- Balance automation with human review when necessary
+#### Core Endpoints
 
-This approach ensures scalable communication while maintaining a strong candidate experience.
-
----
-
-## 👤 Candidate Experience Layer
-
-The system can be extended to provide transparency to candidates by allowing them to track their application status.
-
-Possible features include:
-- Real-time status updates (Applied, Screened, Interview, Hold, Rejected, Offer)
-- Notifications when status changes
-- Estimated response timelines based on pipeline stage
-- Reduced uncertainty and improved candidate experience
-
-This helps create a more transparent and responsive hiring process, which is critical in high-volume recruiting environments.
+GET /health
+GET /profiles
+POST /resume/screen
+POST /resume/full_pipeline
+POST /resume/batch_screen
+POST /resume/batch_full_pipeline
+POST /workflow/stage_summary
+POST /workflow/action_queue
 
 ---
 
-## 📊 Example Output
+## 🧩 System Architecture
 
-| Name  | Score | Decision  |
-|-------|-------|-----------|
-| Cathy | 11    | Interview |
-| Alex  | 9     | Hold      |
-| Brian | 6     | Reject    |
-
----
-
-## 🧪 Real-World Validation
-- Evaluated system using **20+ real candidate profiles**  
-- Tested across **50+ simulated scenarios**  
-- Identified edge cases such as:
-  - Strong candidates under-ranked due to missing keywords  
-  - Inconsistent resume formatting affecting evaluation  
-- Refined scoring logic to improve **consistency and robustness**  
+Streamlit Frontend
+↓
+Resume Parser (NLP)
+↓
+Healthcare Scoring Engine
+↓
+Workflow Engine (State Machine)
+↓
+FastAPI Backend
 
 ---
 
-## 🛠️ Tech Stack
-- Python  
-- Pandas  
-- scikit-learn  
+## 🔄 Domain Adaptation (Key Highlight)
+
+This system was originally built for **banking recruiting** and later refactored into a healthcare-focused decision engine.
+
+### Key Transformations
+
+#### 1. Signal Redesign
+- Removed sales and banking-related features
+- Introduced clinical signals and certifications
+
+#### 2. Scoring Logic Upgrade
+- Prioritized RN license and clinical experience
+- Added must-have signals
+- Introduced risk flagging
+- Added education as graded signal
+
+#### 3. Resume Parser Refactor
+- Replaced business keywords with healthcare terminology
+- Added clinical evidence detection
+
+#### 4. Workflow Adaptation
+- Updated pipeline stages for healthcare hiring
+- Added clinical assessments and compliance checks
 
 ---
 
-## 📁 Project Structure
-
-recruiting-decision-system/
-│── resume_scoring.py
-│── data/
-│ └── sample_candidates.csv
-│── README.md
+## 📂 Project Structure
+.
+├── app.py
+├── main.py
+├── resume_parser.py
+├── resume_scoring.py
+├── workflow_engine.py
+├── jd_profiles.py
+├── communications.py
+├── file_parsers.py
+└── README.md
 
 
 ---
 
-## ▶️ How to Run
+## 📊 Example Workflow
 
-pip install pandas scikit-learn
-python resume_scoring.py
-
-
----
-
-## 💡 Example Use Case
-Given a dataset of candidates and job requirements, the system:
-1. Extracts structured features  
-2. Computes candidate scores  
-3. Ranks candidates  
-4. Outputs standardized decisions  
+1. Upload resume or CSV file
+2. Parse candidate information
+3. Extract healthcare-specific signals
+4. Score candidate against job profile
+5. Generate decision (Interview / Hold / Reject)
+6. Move candidate through workflow pipeline
+7. Manage via dashboard or API
 
 ---
 
-## 🤖 Extension
-This project includes a baseline supervised machine learning model using Logistic Regression as an **extension to the rule-based system**.
+## 💡 Why This Project Matters
 
-The workflow includes:
-- preprocessing structured candidate features  
-- one-hot encoding categorical variables  
-- splitting data into training and test sets  
-- training a classification model to predict candidate fit  
-- evaluating performance using **accuracy, precision, and recall**  
-
-**Model Performance:**
-- Accuracy: ~0.80  
-
-This extension demonstrates how a rule-based system can evolve into a more adaptive, data-driven approach to reduce false negatives and improve candidate matching.
-
----
-
-## 📈 Impact
-- Standardizes candidate evaluation  
-- Reduces subjective bias in screening  
-- Improves efficiency in comparing candidates  
-- Simulates real-world decision workflows  
-
----
-
-## ⚠️ Current Limitations
-- Keyword-based scoring may under-rank strong candidates with unconventional resume wording
-- Resume formatting inconsistencies can affect extracted features
-- The current system runs as an offline prototype and is not yet integrated with a live ATS
-- Mid-tier candidate decisions still depend on configurable business rules and pipeline context
-
----
-
-## 🔄 Future Improvements
-- Integrate with an ATS or structured recruiting database
-- Add recruiter-facing dashboard for pipeline visibility
-- Trigger automated follow-up communication based on candidate status
-- Add semantic matching / NLP for deeper resume-job alignment
-- Support recruiter override decisions and audit logs
-- Expand the system into a multi-stage evaluation workflow beyond resume screening 
-
----
-
-## 🎯 Purpose
 This project demonstrates:
-- Translating real-world recruiting workflows into structured, data-driven systems  
-- Designing scalable decision-making pipelines using Python  
-- Applying machine learning as an extension to operational systems  
-- Building AI-assisted workflows for high-efficiency recruiting operations  
+
+- End-to-end AI system design
+- Domain-specific decision modeling
+- Workflow automation
+- Backend + frontend integration
+- Domain adaptation (banking → healthcare)
+- Realistic hiring logic simulation
 
 ---
 
-## 📌 Demo
-See `resume_scoring.py` for a sample implementation and output.
+## 🛠 Tech Stack
+
+- Python
+- Streamlit
+- FastAPI
+- Pandas
+- Pydantic
+- Regex-based NLP parsing
 
 ---
 
-## 🔍 API Demo
+## 💼 Resume Bullet
 
-### Swagger UI
-
-![Swagger UI](./API.png)
+Built and deployed an AI-powered healthcare recruiting system using Streamlit and FastAPI to automate resume parsing, clinical signal extraction, candidate scoring, and hiring workflow decisions.
 
 ---
 
-### Example Output
+## 🔮 Future Improvements
 
-![Result](./Result.png)
+- LLM-based resume parsing
+- Explainable AI scoring (decision reasoning)
+- ML-based candidate ranking
+- ATS integration
+- Multi-role hiring models
+
+
+
+
