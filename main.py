@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 import pandas as pd
 
 from resume_scoring import run_screening
@@ -9,12 +9,12 @@ from workflow_engine import (
     stage_summary,
     action_queue,
 )
-from jd_profiles import BANK_ROLE_PROFILES
+from jd_profiles import HEALTHCARE_ROLE_PROFILES
 
 
 app = FastAPI(
-    title="AI Resume Screening & Workflow API",
-    description="Backend API for candidate screening, scoring, decision automation, and hiring workflow progression.",
+    title="AI Healthcare Recruiting API",
+    description="Backend API for healthcare candidate screening, clinical evaluation, and recruiting workflow automation.",
     version="1.0.0",
 )
 
@@ -24,88 +24,85 @@ app = FastAPI(
 # =========================
 
 class CandidateRequest(BaseModel):
-    Name: str = Field(default="", description="Candidate full name")
-    Role: str = Field(default="Retail Banker", description="Display role name")
-    Sales_Years: float = Field(default=0, description="Years of sales experience")
-    Customer_Service_Years: float = Field(default=0, description="Years of customer service experience")
-    Cash_Handling_Years: float = Field(default=0, description="Years of cash handling experience")
-    Banking_Experience: str = Field(default="No", description="Yes or No")
-    Education: str = Field(default="", description="Education level, e.g. Bachelor, Master")
-    Skills: str = Field(default="", description="Comma-separated or free-text skills")
-    Days_In_Pipeline: float = Field(default=0, description="How many days candidate has been in the pipeline")
+    Name: str = ""
+    Role: str = "Registered Nurse"
 
-    Candidate_Response_Status: str = Field(default="No Response")
-    Customer_Facing_Evidence: str = Field(default="")
-    Sales_Evidence: str = Field(default="")
-    Cash_Evidence: str = Field(default="")
-    Banking_Evidence: str = Field(default="")
-    Digital_Banking_Flag: str = Field(default="No")
-    Digital_Banking_Evidence: str = Field(default="")
-    Relationship_Flag: str = Field(default="No")
-    Relationship_Evidence: str = Field(default="")
-    Operations_Flag: str = Field(default="No")
-    Operations_Evidence: str = Field(default="")
-    Problem_Solving_Flag: str = Field(default="No")
-    Problem_Solving_Evidence: str = Field(default="")
-    Adaptability_Flag: str = Field(default="No")
-    Adaptability_Evidence: str = Field(default="")
-    Experience_Summaries: str = Field(default="")
+    Certifications: str = ""
+    Clinical_Years: float = 0
+    Education: str = ""
+    Skills: str = ""
 
-    # Workflow fields
-    Current_Stage: str = Field(default="Applied")
-    Assessment_Status: str = Field(default="Not Sent")
-    Assessment_Result: str = Field(default="Pending")
-    Cognitive_Test_Status: str = Field(default="Not Sent")
-    Personality_Test_Status: str = Field(default="Not Sent")
-    Cognitive_Score: str = Field(default="")
-    Personality_Match: str = Field(default="")
-    Recruiter_Call_Status: str = Field(default="Not Scheduled")
-    Recruiter_Call_Outcome: str = Field(default="Pending")
-    Recruiter_Notes: str = Field(default="")
-    Manager_Interview_Status: str = Field(default="Not Scheduled")
-    Manager_Interview_Outcome: str = Field(default="Pending")
-    Manager_Feedback: str = Field(default="")
-    Interview_Debrief_Status: str = Field(default="Pending")
-    Final_HR_Status: str = Field(default="Not Started")
-    Final_HR_Outcome: str = Field(default="Pending")
-    Offer_Status: str = Field(default="None")
-    Offer_Decision: str = Field(default="Pending")
-    Workflow_Next_Action: str = Field(default="")
-    Workflow_Blocker: str = Field(default="")
-    Last_Workflow_Event: str = Field(default="")
+    Days_In_Pipeline: float = 0
+    Candidate_Response_Status: str = "New Applicant"
+
+    # Healthcare signals
+    RN_License_Flag: str = "No"
+    BLS_ACLS_Flag: str = "No"
+    Hospital_Experience_Flag: str = "No"
+    Patient_Care_Flag: str = "No"
+    EMR_Flag: str = "No"
+    HIPAA_Flag: str = "No"
+    Communication_Flag: str = "No"
+    Teamwork_Flag: str = "No"
+
+    Experience_Summaries: str = ""
+
+    # Workflow
+    Current_Stage: str = "Applied"
+    Assessment_Status: str = "Not Sent"
+    Assessment_Result: str = "Pending"
+
+    Clinical_Judgment_Status: str = "Not Sent"
+    Patient_Care_Scenario_Status: str = "Not Sent"
+    Compliance_Check_Status: str = "Not Sent"
+
+    Recruiter_Call_Status: str = "Not Scheduled"
+    Recruiter_Call_Outcome: str = "Pending"
+
+    Manager_Interview_Status: str = "Not Scheduled"
+    Manager_Interview_Outcome: str = "Pending"
+
+    Final_HR_Status: str = "Not Started"
+    Final_HR_Outcome: str = "Pending"
+
+    Offer_Status: str = "None"
+    Offer_Decision: str = "Pending"
+
+    Workflow_Next_Action: str = ""
+    Workflow_Blocker: str = ""
+    Last_Workflow_Event: str = ""
 
 
 class BatchCandidateRequest(BaseModel):
     candidates: List[CandidateRequest]
-    profile_key: str = Field(default="generic_retail_banker")
+    profile_key: str = "registered_nurse"
 
 
 class SingleCandidateEnvelope(BaseModel):
     candidate: CandidateRequest
-    profile_key: str = Field(default="generic_retail_banker")
+    profile_key: str = "registered_nurse"
 
 
 # =========================
-# Helper Functions
+# Helpers
 # =========================
 
-def validate_profile_key(profile_key: str) -> None:
-    if profile_key not in BANK_ROLE_PROFILES:
-        valid_keys = list(BANK_ROLE_PROFILES.keys())
+def validate_profile_key(profile_key: str):
+    if profile_key not in HEALTHCARE_ROLE_PROFILES:
         raise HTTPException(
             status_code=400,
             detail={
                 "error": f"Invalid profile_key: {profile_key}",
-                "valid_profile_keys": valid_keys,
+                "valid_profile_keys": list(HEALTHCARE_ROLE_PROFILES.keys()),
             },
         )
 
 
-def candidate_to_dataframe(candidate: CandidateRequest) -> pd.DataFrame:
+def candidate_to_df(candidate: CandidateRequest):
     return pd.DataFrame([candidate.model_dump()])
 
 
-def batch_to_dataframe(candidates: List[CandidateRequest]) -> pd.DataFrame:
+def batch_to_df(candidates: List[CandidateRequest]):
     return pd.DataFrame([c.model_dump() for c in candidates])
 
 
@@ -122,9 +119,9 @@ def safe_record(df: pd.DataFrame) -> Dict[str, Any]:
 @app.get("/")
 def root():
     return {
-        "message": "AI Resume Screening & Workflow API is running",
+        "message": "AI Healthcare Recruiting API is running",
         "docs_url": "/docs",
-        "available_endpoints": [
+        "endpoints": [
             "/health",
             "/profiles",
             "/resume/screen",
@@ -141,7 +138,7 @@ def root():
 def health():
     return {
         "status": "ok",
-        "service": "AI Resume Screening & Workflow API",
+        "service": "AI Healthcare Recruiting API",
         "version": "1.0.0",
     }
 
@@ -149,38 +146,39 @@ def health():
 @app.get("/profiles")
 def get_profiles():
     return {
-        "available_profile_keys": list(BANK_ROLE_PROFILES.keys()),
-        "profiles": BANK_ROLE_PROFILES,
+        "available_profile_keys": list(HEALTHCARE_ROLE_PROFILES.keys()),
+        "profiles": HEALTHCARE_ROLE_PROFILES,
     }
 
 
 # =========================
-# Screening Endpoints
+# Screening
 # =========================
 
 @app.post("/resume/screen")
 def screen_resume(payload: SingleCandidateEnvelope):
     validate_profile_key(payload.profile_key)
 
-    df = candidate_to_dataframe(payload.candidate)
-    screened_df = run_screening(df, profile_key=payload.profile_key)
-    return safe_record(screened_df)
+    df = candidate_to_df(payload.candidate)
+    screened = run_screening(df, profile_key=payload.profile_key)
+
+    return safe_record(screened)
 
 
 @app.post("/resume/full_pipeline")
 def full_pipeline(payload: SingleCandidateEnvelope):
     validate_profile_key(payload.profile_key)
 
-    df = candidate_to_dataframe(payload.candidate)
+    df = candidate_to_df(payload.candidate)
 
-    screened_df = run_screening(df, profile_key=payload.profile_key)
-    final_df = apply_workflow_to_dataframe(screened_df)
+    screened = run_screening(df, profile_key=payload.profile_key)
+    final = apply_workflow_to_dataframe(screened)
 
-    return safe_record(final_df)
+    return safe_record(final)
 
 
 # =========================
-# Batch Endpoints
+# Batch
 # =========================
 
 @app.post("/resume/batch_screen")
@@ -190,12 +188,12 @@ def batch_screen(payload: BatchCandidateRequest):
     if not payload.candidates:
         raise HTTPException(status_code=400, detail="candidates list cannot be empty")
 
-    df = batch_to_dataframe(payload.candidates)
-    screened_df = run_screening(df, profile_key=payload.profile_key)
+    df = batch_to_df(payload.candidates)
+    screened = run_screening(df, profile_key=payload.profile_key)
 
     return {
-        "count": len(screened_df),
-        "results": screened_df.to_dict(orient="records"),
+        "count": len(screened),
+        "results": screened.to_dict(orient="records"),
     }
 
 
@@ -206,35 +204,33 @@ def batch_full_pipeline(payload: BatchCandidateRequest):
     if not payload.candidates:
         raise HTTPException(status_code=400, detail="candidates list cannot be empty")
 
-    df = batch_to_dataframe(payload.candidates)
-    screened_df = run_screening(df, profile_key=payload.profile_key)
-    final_df = apply_workflow_to_dataframe(screened_df)
+    df = batch_to_df(payload.candidates)
+    screened = run_screening(df, profile_key=payload.profile_key)
+    final = apply_workflow_to_dataframe(screened)
 
     return {
-        "count": len(final_df),
-        "results": final_df.to_dict(orient="records"),
+        "count": len(final),
+        "results": final.to_dict(orient="records"),
     }
 
 
 # =========================
-# Workflow Analytics Endpoints
+# Workflow Analytics
 # =========================
 
 @app.post("/workflow/stage_summary")
 def workflow_stage_summary(payload: BatchCandidateRequest):
     validate_profile_key(payload.profile_key)
 
-    if not payload.candidates:
-        raise HTTPException(status_code=400, detail="candidates list cannot be empty")
+    df = batch_to_df(payload.candidates)
+    screened = run_screening(df, profile_key=payload.profile_key)
+    final = apply_workflow_to_dataframe(screened)
 
-    df = batch_to_dataframe(payload.candidates)
-    screened_df = run_screening(df, profile_key=payload.profile_key)
-    final_df = apply_workflow_to_dataframe(screened_df)
-    summary_df = stage_summary(final_df)
+    summary = stage_summary(final)
 
     return {
-        "count": len(summary_df),
-        "stage_summary": summary_df.to_dict(orient="records"),
+        "count": len(summary),
+        "stage_summary": summary.to_dict(orient="records"),
     }
 
 
@@ -242,15 +238,13 @@ def workflow_stage_summary(payload: BatchCandidateRequest):
 def workflow_action_queue(payload: BatchCandidateRequest):
     validate_profile_key(payload.profile_key)
 
-    if not payload.candidates:
-        raise HTTPException(status_code=400, detail="candidates list cannot be empty")
+    df = batch_to_df(payload.candidates)
+    screened = run_screening(df, profile_key=payload.profile_key)
+    final = apply_workflow_to_dataframe(screened)
 
-    df = batch_to_dataframe(payload.candidates)
-    screened_df = run_screening(df, profile_key=payload.profile_key)
-    final_df = apply_workflow_to_dataframe(screened_df)
-    queue_df = action_queue(final_df)
+    queue = action_queue(final)
 
     return {
-        "count": len(queue_df),
-        "action_queue": queue_df.to_dict(orient="records"),
+        "count": len(queue),
+        "action_queue": queue.to_dict(orient="records"),
     }
